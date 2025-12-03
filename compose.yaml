@@ -1,0 +1,37 @@
+﻿services:
+  interviewfuture:
+    image: interviewfuture
+    build:
+      context: .
+      dockerfile: InterviewFuture/Dockerfile
+
+  databaseservice:
+    image: databaseservice
+    build:
+      context: .
+      dockerfile: DataBaseService/Dockerfile
+
+  authservice:
+    image: authservice
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+
+  apigateway:
+    image: apigateway
+    build:
+      context: .
+      dockerfile: APIGateway/Dockerfile
+
+  llmservice:
+    image: llmservice
+    build:
+      context: .
+      dockerfile: LLMService/Dockerfile
+
+  codeexecutionservice:
+    image: codeexecutionservice
+    build:
+      context: .
+      dockerfile: CodeExecutionService/Dockerfile
+
