@@ -1,0 +1,41 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # --- LLMService ---
+  llmservice: # Имя сервиса. Используется как hostname внутри Docker сети.
+    build:
+      context: ./backend/LLMService # Относительный путь к папке, где лежит Dockerfile для LLMService
+      dockerfile: Dockerfile      # Имя файла (если не "Dockerfile")
+    ports:
+      # ВАЖНО: Твой Dockerfile EXPOSE 8080 и 8081, НО внутри контейнера сервис ASP.NET слушает по умолчанию на 80 (или на том, что в ASPNETCORE_URLS)
+      # Если ты не менял это в Program.cs или appsettings.json, то ASP.NET Core будет слушать на порту 80.
+      # Поэтому мы пробрасываем внутренний 80 на внешний 8080.
+      # Если ты настроил ASP.NET Core слушать на 8080 (например, ASPNETCORE_URLS=http://+:8080), то используй:
+      # - "8080:8080"
+      # - "8081:8081"
+      # Но для простоты и стандартного поведения .NET, лучше использовать:
+      - "8080:80" # Внешний порт 8080 -> внутренний порт 80 (где ASP.NET Core ожидает запросы)
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      # Рассмотри возможность задавать чувствительные данные через переменные окружения
+      # Scibox__ApiKey=${SCIBOX_API_KEY} # Если используешь .env файл
+    networks:
+      - app-network
+
+  # --- Frontend ---
+  frontend:
+    build:
+      context: ./frontend # Относительный путь к папке frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80" # Nginx внутри контейнера слушает на 80
+    depends_on:
+      # Используем имя сервиса llmservice
+      - llmservice # Убедимся, что llmservice запущен перед frontend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
